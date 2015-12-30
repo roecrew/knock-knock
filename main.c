@@ -32,10 +32,17 @@ int status;
 char *nmapoutname = "nmapout.txt";
 char ipfilename[100];
 char port[11];
+char irand[11];
 
 char *token = (char *)NULL;
 
 int main(int argc, const char * argv[]) {
+    
+    uid_t euid=geteuid();
+    if (0!=euid) {
+        printf("\nPlease run as root\n");
+        exit(0);
+    }
     
     signal(SIGINT, ctrlc_handler);
     signal(SIGTSTP, ctrlz_handler);
@@ -46,6 +53,7 @@ int main(int argc, const char * argv[]) {
     int mark = 0;
     strcpy(ipfilename, "ip.txt");
     strcpy(port, "23");
+    strcpy(irand, "1000");
     
     if (argc == 1) {
         isdiscover = 1;
@@ -105,7 +113,7 @@ int main(int argc, const char * argv[]) {
                 isdiscover = 1;
                 isknock = 1;
             }
-        } else if (!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")) {
+        } else if (!strcmp(argv[i],"-t") || !strcmp(argv[i],"--type")) {
             if (argv[i+1]!=NULL) {
                 strcpy(ipfilename, argv[i+1]);
                 i++;
@@ -113,21 +121,35 @@ int main(int argc, const char * argv[]) {
                 printf("\nPlease specify a file.\n");
                 exit(0);
             }
+            isdiscover = 0;
+            isknock = 0;
             isversion = 1;
             mark = 1;
+        } else if (!strcmp(argv[i],"-n") || !strcmp(argv[i],"--numaddr")) {
+            if (argv[i+1]!=NULL) {
+                strcpy(irand, argv[i+1]);
+                i++;
+            } else {
+                printf("\nPlease specify a value.\n");
+                exit(0);
+            }
+            if (!isdiscover && !isknock && !isversion) {
+                isdiscover = 1;
+                isknock = 1;
+            }
         }
     }
     
     
     if (isdiscover) {
+        safe_printf("Searching %s addresses port %s\nPlease wait...\n", irand, port);
         pid = fork();
         if (pid == 0) {
             fo = open(nmapoutname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
             dup2(fo, 1);
             close(fo);
-            char *execArgs[] = {"nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", "1000", NULL};
+            char *execArgs[] = {"nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", irand, NULL};
             int discoverSpawn = execvp(execArgs[0], execArgs);
-            
             exit(0);
         } else {
             parse_ip();
@@ -155,6 +177,7 @@ int main(int argc, const char * argv[]) {
                 dup2(fo, 1);
                 close(fo);
                 char *execArgs[] = {"nmap", "-n", "-Pn", "-sV", "-p", port, token, NULL};
+                
                 int versionSpawn = execvp(execArgs[0], execArgs);
                 
                 exit(0);
@@ -165,6 +188,7 @@ int main(int argc, const char * argv[]) {
     }
     
     if (isknock) {
+        printf("Starting knock\n");
         FILE *ipfd = fopen(ipfilename, "rw+");
         char buf[1000];
         while (fgets(buf,1000, ipfd)!=NULL) {
@@ -223,6 +247,7 @@ void parse_version_ip(char *filename, char *addr) {
     while (fgets(buf,1000, nnapoutfd)!=NULL) {
         if (i==5) {
             fprintf(ipwithverfd, "%s\t%s", addr, buf);
+            printf("%s\t%s",addr, buf);
         }
         i++;
     }
