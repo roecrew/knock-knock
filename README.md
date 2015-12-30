@@ -1,3 +1,3 @@
 # knock-knock
 
-An easier way to knock on ports.
+Nmap wrapper for knocking on ports.
