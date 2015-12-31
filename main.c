@@ -15,9 +15,14 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <time.h>
+#include <sys/time.h>
+#include <pthread.h>
+#include <sched.h>
 
 #define MAXS 1024
 
+void *time_out(void *arg);
 void parse_ip();
 void parse_version_ip(char *filename, char *addr);
 void ctrlc_handler();
@@ -25,7 +30,10 @@ void ctrlz_handler();
 void ctrlbslash_handler();
 void safe_printf(const char *format, ...);
 
+pthread_t timeout_t;
+
 int fo = -1;
+int so = -1;
 pid_t  pid;
 int status;
 
@@ -121,8 +129,6 @@ int main(int argc, const char * argv[]) {
                 printf("\nPlease specify a file.\n");
                 exit(0);
             }
-            isdiscover = 0;
-            isknock = 0;
             isversion = 1;
             mark = 1;
         } else if (!strcmp(argv[i],"-n") || !strcmp(argv[i],"--numaddr")) {
@@ -148,7 +154,7 @@ int main(int argc, const char * argv[]) {
             fo = open(nmapoutname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
             dup2(fo, 1);
             close(fo);
-            char *execArgs[] = {"nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", irand, NULL};
+            char *execArgs[] = {"./nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", irand, NULL};
             int discoverSpawn = execvp(execArgs[0], execArgs);
             exit(0);
         } else {
@@ -171,15 +177,19 @@ int main(int argc, const char * argv[]) {
         while (fgets(buf,1000, ipfd)!=NULL) {
             const char t[2] = " \n";
             token = strtok(buf, t);
+            
+            pthread_create(&timeout_t,NULL,time_out,NULL);
+            
             pid = fork();
             if (pid == 0) {
                 fo = open(nmapoutname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+                so = dup(1);
                 dup2(fo, 1);
                 close(fo);
-                char *execArgs[] = {"nmap", "-n", "-Pn", "-sV", "-p", port, token, NULL};
-                
+                char *execArgs[] = {"./nmap", "-n", "-Pn", "-sV", "-p", port, token, NULL};
                 int versionSpawn = execvp(execArgs[0], execArgs);
-                
+                dup2(so, 1);
+                close(so);
                 exit(0);
             } else {
                 parse_version_ip(ipwithver, token);
@@ -200,7 +210,7 @@ int main(int argc, const char * argv[]) {
             } else if (!strcmp(port, "21")) {
                 execArgs[0] = "ftp";
             } else {
-                execArgs[0] = "telnet";
+                execArgs[0] = "./telnet";
             }
             execArgs[1] = token;
             pid = fork();
@@ -213,6 +223,15 @@ int main(int argc, const char * argv[]) {
     }
     
     return 0;
+}
+
+void *time_out(void *arg) {
+    usleep(15000000);
+    safe_printf("Timeout!\n");
+    kill(pid, SIGINT);
+    dup2(so, 1);
+    close(so);
+    return NULL;
 }
 
 void safe_printf(const char *format, ...)
@@ -239,6 +258,7 @@ void ctrlz_handler() {
 
 void parse_version_ip(char *filename, char *addr) {
     waitpid(-1, &status, 0);
+    pthread_cancel(timeout_t);
     FILE *nnapoutfd = fopen(nmapoutname, "r+");
     FILE *ipwithverfd = fopen(filename, "a");
     
