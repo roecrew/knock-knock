@@ -26,17 +26,17 @@ Version detect port 22 and save as ver_ip.txt.
 Ctrl-z is overridden, it acts as a next-address button when enumerating.
 
 ```
-Trying 188.126.137.230...
-Connected to 188.126.137.230.arianrp.ir.
+Trying 181.126.131.230...
+Connected to 181.126.131.230.ar.ir.
 Escape character is '^]'.
 Password:
 telnet> ^Z
-Trying 183.24.252.213...
-Connected to 183.24.252.213.
+Trying 173.24.222.213...
+Connected to 173.24.222.213.
 Escape character is '^]'.
 
 192.168.1.255 login:
 telnet> ^Z
-Trying 123.140.59.129...
-Connected to 123.140.59.129.
+Trying 124.140.59.129...
+Connected to 124.140.59.129.
 ```
