@@ -29,6 +29,7 @@
 *.hex
 nmap
 telnet
+ftp
 
 # Debug files
 *.dSYM/
