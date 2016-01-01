@@ -23,7 +23,7 @@ Version detect port 22 and save as ver_ip.txt.
 
 ## Notes
 
-Ctrl-z is overridden, it acts as a next-address button when enumerating.
+Ctrl-z is overridden, it acts as a next-address button when enumerating through the address list.
 
 ```
 Trying 181.126.131.230...
