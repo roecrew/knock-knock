@@ -16,3 +16,7 @@ Connect to each ip's port 21.
 ```
 ./kknock -k open23.txt -p 21
 ```
+Version detect port 22 and save as ver_ip.txt.
+```
+./kknock -t ip.txt -p 22
+```
