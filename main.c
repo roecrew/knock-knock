@@ -154,7 +154,7 @@ int main(int argc, const char * argv[]) {
             fo = open(nmapoutname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
             dup2(fo, 1);
             close(fo);
-            char *execArgs[] = {"./nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", irand, NULL};
+            char *execArgs[] = {"nmap", "-n", "-Pn", "-sS", "-p", port, "--open", "-iR", irand, NULL};
             int discoverSpawn = execvp(execArgs[0], execArgs);
             exit(0);
         } else {
@@ -186,7 +186,7 @@ int main(int argc, const char * argv[]) {
                 so = dup(1);
                 dup2(fo, 1);
                 close(fo);
-                char *execArgs[] = {"./nmap", "-n", "-Pn", "-sV", "-p", port, token, NULL};
+                char *execArgs[] = {"nmap", "-n", "-Pn", "-sV", "-p", port, token, NULL};
                 int versionSpawn = execvp(execArgs[0], execArgs);
                 dup2(so, 1);
                 close(so);
@@ -210,7 +210,7 @@ int main(int argc, const char * argv[]) {
             } else if (!strcmp(port, "21")) {
                 execArgs[0] = "ftp";
             } else {
-                execArgs[0] = "./telnet";
+                execArgs[0] = "telnet";
             }
             execArgs[1] = token;
             pid = fork();
