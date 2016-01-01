@@ -247,7 +247,9 @@ void safe_printf(const char *format, ...)
 
 void ctrlc_handler() {
     close(fo);
-    //safe_printf("\nCTRL-C HIT!!\n");
+    kill(pid, SIGINT);
+    dup2(so, 1);
+    close(so);
     exit(0);
 }
 
