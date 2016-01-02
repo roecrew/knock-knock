@@ -143,6 +143,19 @@ int main(int argc, const char * argv[]) {
                 isdiscover = 1;
                 isknock = 1;
             }
+        } else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
+            printf("Usage:\n");
+            printf("    -o <filename>               runs -d and -k\n");
+            printf("    -n <# of addr>              number of addr to search\n");
+            printf("    -p <port>                   default 23\n");
+            printf("    -d <filename>               creates file of addr whose ports are open\n");
+            printf("    -t <filename>               version detection of addr\n");
+            printf("    -k <filename>               creates connection for addr on specified port\n\n");
+            printf("Default values\n");
+            printf("    filename: ip.txt\n");
+            printf("    port: 23\n");
+            printf("    # of addr: 1000\n\n");
+            exit(0);
         }
     }
     
