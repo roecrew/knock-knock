@@ -4,9 +4,13 @@ Nmap wrapper for knocking on ports.
 
 ## Usage
 
-Scan 1000 addresses for an open telnet port, save those ip's to ip.txt, and then connect to those ports.<br>
+Scan 1000 addresses, checking for open port 23 (telnet), save those ips to 'ip.txt', and then connect to those ports.
 ```
 ./kknock
+```
+Same as the above command, except the filename is declared as open23.txt.
+```
+./kknock -o open23.txt
 ```
 Scan 5000 addresses for an open telnet port and save list of ip's as open23.txt.
 ```
@@ -16,7 +20,7 @@ Connect to each ip's port 21.
 ```
 ./kknock -k open23.txt -p 21
 ```
-Version detect port 22 and save as ver_ip.txt.
+Version detect port 22 and save as ver_*.txt.
 ```
 ./kknock -t ip.txt -p 22
 ```
