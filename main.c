@@ -227,7 +227,7 @@ int main(int argc, const char * argv[]) {
 
 void *time_out(void *arg) {
     usleep(15000000);
-    safe_printf("Timeout!\n");
+    safe_printf("%s timeout!\n", token);
     kill(pid, SIGINT);
     dup2(so, 1);
     close(so);
