@@ -218,12 +218,16 @@ int main(int argc, const char * argv[]) {
             const char t[2] = " \n";
             token = strtok(buf, t);
             char *execArgs[100];
-            if (!strcmp(port, "22")) {
-                execArgs[0] = "ssh";
-            } else if (!strcmp(port, "21")) {
+            if (!strcmp(port, "21")) {
                 execArgs[0] = "ftp";
-            } else {
+            } else if (!strcmp(port, "22")) {
+                execArgs[0] = "ssh";
+            } else if (!strcmp(port, "23")) {
                 execArgs[0] = "telnet";
+            } else {
+                execArgs[0] = "ncat";
+                execArgs[2] = port;
+                execArgs[3] = "-v";
             }
             execArgs[1] = token;
             pid = fork();
