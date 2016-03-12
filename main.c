@@ -39,6 +39,7 @@ int status;
 
 char *nmapoutname = "nmapout.txt";
 char ipfilename[100];
+char knocklist[100];
 char port[11];
 char irand[11];
 
@@ -58,8 +59,10 @@ int main(int argc, const char * argv[]) {
     int isdiscover = 0;
     int isknock = 0;
     int isversion = 0;
+    int isauto = 0;
     int mark = 0;
     strcpy(ipfilename, "ip.txt");
+    strcpy(knocklist, "klist.txt");
     strcpy(port, "23");
     strcpy(irand, "1000");
     
@@ -68,7 +71,7 @@ int main(int argc, const char * argv[]) {
         isknock = 1;
     }
     
-    for (int i=1; i<argc; i++) {
+    for (int i=1; i<argc && argv[i][0]!='>'; i++) {
         if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--discover")) {
             if (mark) {
                 break;
@@ -143,6 +146,14 @@ int main(int argc, const char * argv[]) {
                 isdiscover = 1;
                 isknock = 1;
             }
+        } else if (!strcmp(argv[i],"-a") || !strcmp(argv[i],"--auto")) {
+            if (argv[i+1]!=NULL) {
+                if (argv[i+1][0]!='-') {
+                    strcpy(irand, argv[i+1]);
+                    i++;
+                }
+            }
+            isauto = 1;
         } else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
             printf("Usage:\n");
             printf("    -o <filename>               runs -d and -k\n");
@@ -151,6 +162,7 @@ int main(int argc, const char * argv[]) {
             printf("    -d <filename>               creates file of addr whose ports are open\n");
             printf("    -t <filename>               version detection of addr\n");
             printf("    -k <filename>               creates connection for addr on specified port\n\n");
+            printf("    -a <filename>               auto-knock using specified wordlist\n\n");
             printf("Default values\n");
             printf("    filename: ip.txt\n");
             printf("    port: 23\n");
@@ -230,15 +242,81 @@ int main(int argc, const char * argv[]) {
                 execArgs[3] = "-v";
             }
             execArgs[1] = token;
+            int fdp[2];
+            pipe(fdp);
             pid = fork();
-            if (pid == 0) {
-                int knockSpawn = execvp(execArgs[0], execArgs);
+            
+            if (isauto) {
+                if (pid == 0) {
+                    dup2(fdp[0], STDIN_FILENO);
+                    close(fdp[0]);
+                    int knockSpawn = execvp(execArgs[0], execArgs);
+                } else {
+                    int oldout = dup(1);
+                    dup2(fdp[1], STDOUT_FILENO);
+                    close(fdp[1]);
+                    sleep(5);
+                    
+                    FILE *knocklistfd = fopen(knocklist, "r+");
+                    
+                    if (knocklistfd == NULL) {
+                        printf("Error!!");
+                    }
+                    
+                    char buf[1000];
+                    while (fgets(buf,1000, knocklistfd)!=NULL) {
+                        
+                        const char t[2] = " \n";
+                        token = strtok(buf, t);
+                        strcat(token, "\r");
+                        
+                        for(int i=0; token!=NULL; i++) {
+                            if (write(STDOUT_FILENO, token, strlen(token)) == -1) {
+                                dup2(oldout, 1);
+                                close(oldout);
+                                printf("FAILED");
+                                kill(pid, SIGKILL);
+                                waitpid(-1, &status, 0);
+                                break;
+                            }
+                            sleep(5);
+                            token=strtok(NULL, t);
+                        }
+                    }
+                    
+//                    char *w = "admin\r";
+//                    if (write(STDOUT_FILENO, w, strlen(w)) == -1) {
+//                        dup2(oldout, 1);
+//                        close(oldout);
+//                        printf("FAILED");
+//                        kill(pid, SIGKILL);
+//                        waitpid(-1, &status, 0);
+//                        break;
+//                    }
+//                    sleep(5);
+//                    if (write(STDOUT_FILENO, w, strlen(w)) == -1) {
+//                        dup2(oldout, 1);
+//                        close(oldout);
+//                        printf("FAILED");
+//                        kill(pid, SIGKILL);
+//                        waitpid(-1, &status, 0);
+//                        break;
+//                    }
+//                    sleep(5);
+                    dup2(oldout, 1);
+                    close(oldout);
+                    kill(pid, SIGKILL);
+                    waitpid(-1, &status, 0);
+                }
             } else {
-                waitpid(-1, &status, 0);
+                if (pid == 0) {
+                    int knockSpawn = execvp(execArgs[0], execArgs);
+                } else {
+                    waitpid(-1, &status, 0);
+                }
             }
         }
     }
-    
     return 0;
 }
 
