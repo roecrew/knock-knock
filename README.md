@@ -24,6 +24,10 @@ Version detect port 22 and save as ver_*.txt.
 ```
 ./kknock -t open23.txt -p 22
 ```
+You can speecify a wordlist for "auto-knocking" with -a. The default wordlist is klist.txt.
+```
+./kknock -o open23.txt -a
+```
 
 ## Notes
 
