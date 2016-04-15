@@ -19,6 +19,8 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <sched.h>
+#include <sys/wait.h>
+
 
 #define MAXS 1024
 
