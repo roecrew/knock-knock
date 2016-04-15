@@ -151,7 +151,7 @@ int main(int argc, const char * argv[]) {
         } else if (!strcmp(argv[i],"-a") || !strcmp(argv[i],"--auto")) {
             if (argv[i+1]!=NULL) {
                 if (argv[i+1][0]!='-') {
-                    strcpy(irand, argv[i+1]);
+                    strcpy(knocklist, argv[i+1]);
                     i++;
                 }
             }
