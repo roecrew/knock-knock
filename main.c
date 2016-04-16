@@ -137,6 +137,14 @@ int main(int argc, const char * argv[]) {
             isversion = 1;
             mark = 1;
         } else if (!strcmp(argv[i],"-n") || !strcmp(argv[i],"--numaddr")) {
+            if (isknock && !isdiscover) {
+                if (argv[i+1]!=NULL) {
+                    if (argv[i+1][0]!='-') {
+                        i++;
+                    }
+                }
+                continue;
+            }
             if (argv[i+1]!=NULL) {
                 strcpy(irand, argv[i+1]);
                 i++;
@@ -163,7 +171,7 @@ int main(int argc, const char * argv[]) {
             printf("    -p <port>                   default 23\n");
             printf("    -d <filename>               creates file of addr whose ports are open\n");
             printf("    -t <filename>               version detection of addr\n");
-            printf("    -k <filename>               creates connection for addr on specified port\n\n");
+            printf("    -k <filename>               creates connection for addr on specified port\n");
             printf("    -a <filename>               auto-knock using specified wordlist\n\n");
             printf("Default values\n");
             printf("    filename: ip.txt\n");
@@ -265,11 +273,11 @@ int main(int argc, const char * argv[]) {
                         printf("Error!!");
                     }
                     
-                    char buf[1000];
-                    while (fgets(buf,1000, knocklistfd)!=NULL) {
+                    char kbuf[1000];
+                    while (fgets(kbuf,1000, knocklistfd)!=NULL) {
                         
                         const char t[2] = " \n";
-                        token = strtok(buf, t);
+                        token = strtok(kbuf, t);
                         strcat(token, "\r");
                         
                         for(int i=0; token!=NULL; i++) {
@@ -285,26 +293,6 @@ int main(int argc, const char * argv[]) {
                             token=strtok(NULL, t);
                         }
                     }
-                    
-//                    char *w = "admin\r";
-//                    if (write(STDOUT_FILENO, w, strlen(w)) == -1) {
-//                        dup2(oldout, 1);
-//                        close(oldout);
-//                        printf("FAILED");
-//                        kill(pid, SIGKILL);
-//                        waitpid(-1, &status, 0);
-//                        break;
-//                    }
-//                    sleep(5);
-//                    if (write(STDOUT_FILENO, w, strlen(w)) == -1) {
-//                        dup2(oldout, 1);
-//                        close(oldout);
-//                        printf("FAILED");
-//                        kill(pid, SIGKILL);
-//                        waitpid(-1, &status, 0);
-//                        break;
-//                    }
-//                    sleep(5);
                     dup2(oldout, 1);
                     close(oldout);
                     kill(pid, SIGKILL);
